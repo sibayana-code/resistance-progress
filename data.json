@@ -1,0 +1,214 @@
+{
+  "asOf": "2026-09-01",
+  "timezone": "Asia/Manila",
+  "rules": {
+    "sessionSize": 6,
+    "rirMin": 2,
+    "rirMax": 3,
+    "maxGapDays": 2
+  },
+  "sessions": [
+    {
+      "date": "2026-09-01",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "pu-diamond incline",
+          "count": 1,
+          "reps": 20,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "pu-decline",
+          "count": 1,
+          "reps": 15,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "incline sit-up",
+          "count": 1,
+          "reps": 39,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "arm curl",
+          "count": 1,
+          "reps": 15,
+          "load": 8,
+          "rir": 2
+        },
+        {
+          "muscle": "Triceps",
+          "exercise": "standing extension",
+          "count": 1,
+          "reps": 39,
+          "load": 8,
+          "rir": 3
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 18,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 13,
+          "load": 8,
+          "rir": 2,
+          "extra": true
+        }
+      ]
+    },
+    {
+      "date": "2026-08-30",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 15,
+          "load": 25,
+          "rir": 3
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 17,
+          "load": 25,
+          "rir": 2,
+          "extra": true
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 9,
+          "load": 30,
+          "rir": 2
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 26,
+          "load": "bw",
+          "rir": 3,
+          "extra": true
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 19,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "supinated curl",
+          "count": 1,
+          "reps": 10,
+          "load": 10,
+          "rir": 2
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 9,
+          "load": 12,
+          "rir": 2
+        },
+        {
+          "muscle": "Back",
+          "exercise": "lat pulldown",
+          "count": 1,
+          "reps": 14,
+          "load": 45,
+          "rir": 2
+        }
+      ]
+    },
+    {
+      "date": "2026-08-29",
+      "status": "abandoned",
+      "superseded": true,
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "pu-diamond",
+          "count": 1,
+          "reps": 15,
+          "load": "bw",
+          "rir": 2
+        }
+      ]
+    },
+    {
+      "date": "2026-08-28",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "pu-narrow",
+          "count": 2,
+          "reps": 12,
+          "load": "bw",
+          "rir": [2, 3]
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "pu-low",
+          "count": 1,
+          "reps": 12,
+          "load": "bw",
+          "rir": [2, 3]
+        },
+        {
+          "muscle": "Calves",
+          "exercise": "calf raise",
+          "count": 1,
+          "reps": 25,
+          "load": "bw",
+          "rir": [2, 3]
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "hundred",
+          "count": 1,
+          "seconds": 30,
+          "effort": "too easy"
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "single-leg lunge",
+          "count": 1,
+          "reps": 15,
+          "load": "bw",
+          "effort": "too easy"
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 12,
+          "effort": "too easy"
+        }
+      ]
+    }
+  ]
+}

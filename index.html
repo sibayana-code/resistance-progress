@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en-PH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+  <title>Resistance</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="mast">
+    <div class="mast-inner">
+      <h1>Resistance</h1>
+      <p class="tag">Abo Sibayan · Philippines</p>
+    </div>
+  </header>
+
+  <main id="app">
+    <noscript><p class="err">This page reads the snapshot in data.json. Turn JavaScript on.</p></noscript>
+  </main>
+
+  <footer>Source of truth stays in the private resistance-log.</footer>
+
+  <script>
+    const MUSCLE_ORDER = [
+      "Chest", "Abs", "Biceps", "Triceps",
+      "Quads / glutes", "Shoulders", "Back", "Calves"
+    ];
+
+    function parseISO(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function addDays(iso, n) {
+      const dt = parseISO(iso);
+      dt.setDate(dt.getDate() + n);
+      const mm = String(dt.getMonth() + 1).padStart(2, "0");
+      const dd = String(dt.getDate()).padStart(2, "0");
+      return `${dt.getFullYear()}-${mm}-${dd}`;
+    }
+
+    function formatPH(iso, weekday = "long") {
+      const dt = parseISO(iso);
+      const w = dt.toLocaleDateString("en-PH", { weekday });
+      const month = dt.toLocaleDateString("en-PH", { month: "short" });
+      return `${w} ${dt.getDate()} ${month}`;
+    }
+
+    function shortPH(iso) {
+      const dt = parseISO(iso);
+      const month = dt.toLocaleDateString("en-PH", { month: "short" });
+      return `${dt.getDate()} ${month}`;
+    }
+
+    function rirStatus(set) {
+      if (set.effort === "too easy") return "easy";
+      if (set.rir == null || set.rir === "") return "blank";
+      const lo = Array.isArray(set.rir) ? set.rir[0] : set.rir;
+      const hi = Array.isArray(set.rir) ? set.rir[1] : set.rir;
+      if (hi >= 2 && lo <= 3) return "hit";
+      if (lo > 3) return "easy";
+      return "miss";
+    }
+
+    function formatRir(set) {
+      if (set.effort === "too easy") return "too easy";
+      if (set.rir == null || set.rir === "") return "RIR —";
+      if (Array.isArray(set.rir)) return `RIR ${set.rir[0]}–${set.rir[1]}`;
+      return `RIR ${set.rir}`;
+    }
+
+    function formatLoad(set) {
+      if (set.load === "bw") return "BW";
+      if (typeof set.load === "number") return `${set.load} kg`;
+      return null;
+    }
+
+    function formatDose(set) {
+      if (set.seconds) return `${set.seconds}s`;
+      const count = set.count || 1;
+      if (set.reps == null) return null;
+      return `${count}×${set.reps}`;
+    }
+
+    function formatLine(set) {
+      return [set.exercise, formatDose(set), formatLoad(set), formatRir(set)]
+        .filter(Boolean)
+        .join(" · ");
+    }
+
+    function expandInstances(session) {
+      const out = [];
+      for (const set of session.sets) {
+        const n = set.count || 1;
+        for (let i = 0; i < n; i++) out.push({ session, set });
+      }
+      return out;
+    }
+
+    function barValue(set, weighted) {
+      if (weighted) return typeof set.load === "number" ? set.load : 0;
+      if (set.reps != null) return set.reps;
+      if (set.seconds != null) return set.seconds;
+      return 0;
+    }
+
+    function render(data) {
+      const sessions = data.sessions;
+      const lastComplete = sessions.find((s) => s.status === "complete");
+      const nextDue = addDays(lastComplete.date, data.rules.maxGapDays);
+      const counted = lastComplete.sets.filter((s) => !s.extra).length;
+
+      const rirSets = sessions
+        .filter((s) => !s.superseded)
+        .flatMap(expandInstances);
+      const rir = { hit: 0, easy: 0, miss: 0, blank: 0 };
+      for (const { set } of rirSets) rir[rirStatus(set)] += 1;
+      const rirTotal = rir.hit + rir.easy + rir.miss + rir.blank;
+
+      const bits = [];
+      if (rir.easy) bits.push(`${rir.easy} too easy`);
+      if (rir.miss) bits.push(`${rir.miss} miss`);
+      if (rir.blank) bits.push(`${rir.blank} blank`);
+
+      const muscles = MUSCLE_ORDER.map((name) => {
+        const lifts = new Map();
+        for (const session of [...sessions].reverse()) {
+          if (session.superseded) continue;
+          for (const set of session.sets) {
+            if (set.muscle !== name) continue;
+            const key = `${set.exercise}::${set.extra ? "extra" : "main"}`;
+            if (!lifts.has(key)) {
+              lifts.set(key, { exercise: set.exercise, extra: !!set.extra, instances: [] });
+            }
+            const n = set.count || 1;
+            for (let i = 0; i < n; i++) {
+              lifts.get(key).instances.push({ date: session.date, set });
+            }
+          }
+        }
+        let latest = null;
+        for (const session of sessions) {
+          if (session.superseded) continue;
+          const mine = session.sets.filter((s) => s.muscle === name);
+          if (!mine.length) continue;
+          latest = mine.find((s) => !s.extra) || mine[0];
+          break;
+        }
+        const liftList = [...lifts.values()].sort((a, b) => {
+          const aLast = a.instances[a.instances.length - 1].date;
+          const bLast = b.instances[b.instances.length - 1].date;
+          if (aLast !== bLast) return aLast < bLast ? 1 : -1;
+          if (a.exercise === b.exercise && a.extra !== b.extra) return a.extra ? 1 : -1;
+          return 0;
+        });
+        return { name, latest, lifts: liftList };
+      }).filter((m) => m.latest);
+
+      const recent = sessions.slice(0, 3);
+
+      const app = document.getElementById("app");
+      app.innerHTML = `
+        <dl class="stats">
+          <div><dt>Last complete</dt><dd>${formatPH(lastComplete.date)}</dd></div>
+          <div><dt>Next due</dt><dd>${formatPH(nextDue)}</dd></div>
+          <div><dt>Last session</dt><dd>${counted} of ${data.rules.sessionSize}</dd></div>
+          <div><dt>RIR 2–3</dt><dd>${rir.hit} of ${rirTotal}</dd></div>
+        </dl>
+        <p class="note">6 lifts · target RIR 2–3 · no more than 2 days${bits.length ? ` · ${bits.join(" · ")}` : ""}</p>
+
+        <p class="kicker">Muscles</p>
+        ${muscles.map((muscle) => `
+          <article class="card">
+            <h2>${muscle.name}</h2>
+            <p class="latest">${formatLine(muscle.latest)}${muscle.latest.extra ? " · extra" : ""}</p>
+            ${muscle.lifts.map((lift) => {
+              const weighted = lift.instances.some((x) => typeof x.set.load === "number");
+              const max = Math.max(...lift.instances.map((x) => barValue(x.set, weighted)), 1);
+              const first = lift.instances[0].date;
+              const last = lift.instances[lift.instances.length - 1].date;
+              return `
+                <div class="lift">
+                  <div class="lift-name">
+                    <span>${lift.exercise}</span>
+                    ${lift.extra ? `<span class="flag">extra</span>` : ""}
+                  </div>
+                  <div class="bars" role="img" aria-label="${lift.exercise}${lift.extra ? " extra" : ""}">
+                    ${lift.instances.map((x) => {
+                      const pct = Math.max(10, Math.round((barValue(x.set, weighted) / max) * 100));
+                      const tip = [shortPH(x.date), formatDose(x.set), formatLoad(x.set), formatRir(x.set)].filter(Boolean).join(" · ");
+                      return `<span class="bar ${rirStatus(x.set)}" style="height:${pct}%" title="${tip}"></span>`;
+                    }).join("")}
+                  </div>
+                  <div class="span">${first === last ? `<span>${shortPH(first)}</span>` : `<span>${shortPH(first)}</span><span>${shortPH(last)}</span>`}</div>
+                </div>`;
+            }).join("")}
+          </article>
+        `).join("")}
+
+        <p class="kicker">Recent sessions</p>
+        <ol class="sessions">
+          ${recent.map((s) => {
+            const n = s.sets.filter((x) => !x.extra).length;
+            const label = s.status === "complete"
+              ? `complete · ${n} of ${data.rules.sessionSize}`
+              : `${s.status} · ${n} of ${data.rules.sessionSize}`;
+            return `<li><span class="when">${formatPH(s.date)}</span><span class="state">${label}</span></li>`;
+          }).join("")}
+        </ol>
+      `;
+    }
+
+    fetch("data.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+      .then(render)
+      .catch(() => {
+        document.getElementById("app").innerHTML =
+          `<p class="err">Could not load the log snapshot.</p>`;
+      });
+  </script>
+</body>
+</html>
