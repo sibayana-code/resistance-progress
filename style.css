@@ -7,7 +7,6 @@
   --line: #e6e1d6;
   --accent: #b45309;
   --miss: #9f1239;
-  --track: #ece7dc;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,7 +18,6 @@
     --line: #3a342c;
     --accent: #f5b461;
     --miss: #fb7185;
-    --track: #2b2722;
   }
 }
 
@@ -148,23 +146,17 @@ footer {
   color: var(--muted);
 }
 
-.flag {
+.lift-name .when {
   flex: 0 0 auto;
-  font-size: .68rem;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .bars {
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  height: 42px;
-  margin-top: .35rem;
-  padding: .2rem .15rem 0;
-  background: linear-gradient(to top, var(--track), transparent 70%);
-  border-radius: 6px;
+  height: 36px;
+  margin-top: .3rem;
   overflow-x: auto;
 }
 
@@ -176,19 +168,11 @@ footer {
   flex: 0 0 auto;
 }
 
-.bar.easy { background: var(--muted); opacity: .45; }
+.bar.easy { background: var(--muted); opacity: .4; }
 .bar.miss { background: var(--miss); }
 .bar.blank {
   background: transparent;
   border: 1px solid var(--line);
-}
-
-.span {
-  display: flex;
-  justify-content: space-between;
-  margin-top: .2rem;
-  font-size: .7rem;
-  color: var(--muted);
 }
 
 .sessions { list-style: none; margin: 0; padding: 0; }
