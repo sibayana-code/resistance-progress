@@ -183,8 +183,8 @@
               return `
                 <div class="lift">
                   <div class="lift-name">
-                    <span>${lift.exercise}</span>
-                    ${lift.extra ? `<span class="flag">extra</span>` : ""}
+                    <span>${lift.exercise}${lift.extra ? " · extra" : ""}</span>
+                    <span class="when">${first === last ? shortPH(first) : `${shortPH(first)}–${shortPH(last)}`}</span>
                   </div>
                   <div class="bars" role="img" aria-label="${lift.exercise}${lift.extra ? " extra" : ""}">
                     ${lift.instances.map((x) => {
@@ -193,7 +193,6 @@
                       return `<span class="bar ${rirStatus(x.set)}" style="height:${pct}%" title="${tip}"></span>`;
                     }).join("")}
                   </div>
-                  <div class="span">${first === last ? `<span>${shortPH(first)}</span>` : `<span>${shortPH(first)}</span><span>${shortPH(last)}</span>`}</div>
                 </div>`;
             }).join("")}
           </article>
