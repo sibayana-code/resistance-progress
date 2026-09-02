@@ -27,6 +27,8 @@
       "Chest", "Abs", "Biceps", "Triceps",
       "Quads / glutes", "Shoulders", "Back", "Calves"
     ];
+    const WINDOW_DAYS = 28;
+    const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
     function parseISO(iso) {
       const [y, m, d] = iso.split("-").map(Number);
@@ -99,11 +101,48 @@
       return out;
     }
 
-    function barValue(set, weighted) {
-      if (weighted) return typeof set.load === "number" ? set.load : 0;
-      if (set.reps != null) return set.reps;
-      if (set.seconds != null) return set.seconds;
-      return 0;
+    function mondayOnOrBefore(iso) {
+      const dt = parseISO(iso);
+      return addDays(iso, -((dt.getDay() + 6) % 7));
+    }
+
+    function sundayOnOrAfter(iso) {
+      const dt = parseISO(iso);
+      return addDays(iso, (7 - dt.getDay()) % 7);
+    }
+
+    function stackedWeeks(start, end) {
+      const weeks = [];
+      let d = mondayOnOrBefore(start);
+      const last = sundayOnOrAfter(end);
+      while (d <= last) {
+        const week = [];
+        for (let i = 0; i < 7; i++) {
+          week.push(d);
+          d = addDays(d, 1);
+        }
+        weeks.push(week);
+      }
+      return weeks;
+    }
+
+    function renderWeekChart(weeks, start, end, marks, aria) {
+      return `
+        <div class="week-chart" role="img" aria-label="${aria}">
+          <div class="weekdays">${WEEKDAYS.map((w) => `<span>${w}</span>`).join("")}</div>
+          ${weeks.map((week) => `
+            <div class="week">
+              ${week.map((iso) => {
+                const mark = marks.get(iso);
+                const outside = iso < start || iso > end;
+                const cls = ["cell"];
+                if (outside) cls.push("out");
+                if (mark) cls.push(mark.cls);
+                const tip = mark ? mark.title : shortPH(iso);
+                return `<span class="${cls.join(" ")}" title="${tip}"></span>`;
+              }).join("")}
+            </div>`).join("")}
+        </div>`;
     }
 
     function render(data) {
@@ -159,6 +198,19 @@
       }).filter((m) => m.latest);
 
       const recent = sessions.slice(0, 3);
+      const windowEnd = data.asOf;
+      const windowStart = addDays(windowEnd, -(WINDOW_DAYS - 1));
+      const weeks = stackedWeeks(windowStart, windowEnd);
+
+      const sessionMarks = new Map();
+      for (const s of sessions) {
+        if (s.date < windowStart || s.date > windowEnd) continue;
+        const cls = s.status === "complete" ? "hit" : s.status === "abandoned" ? "miss" : "blank";
+        sessionMarks.set(s.date, {
+          cls,
+          title: `${formatPH(s.date)} · ${s.status}`
+        });
+      }
 
       const app = document.getElementById("app");
       app.innerHTML = `
@@ -170,14 +222,29 @@
         </dl>
         <p class="note">6 lifts · target RIR 2–3 · no more than 2 days${bits.length ? ` · ${bits.join(" · ")}` : ""}</p>
 
+        <p class="kicker">Last ${WINDOW_DAYS} days</p>
+        ${renderWeekChart(weeks, windowStart, windowEnd, sessionMarks, `Sessions from ${shortPH(windowStart)} to ${shortPH(windowEnd)}`)}
+
         <p class="kicker">Muscles</p>
-        ${muscles.map((muscle) => `
+        ${muscles.map((muscle) => {
+          const marks = new Map();
+          for (const session of sessions) {
+            if (session.superseded) continue;
+            if (session.date < windowStart || session.date > windowEnd) continue;
+            const mine = session.sets.filter((s) => s.muscle === muscle.name);
+            if (!mine.length) continue;
+            const main = mine.find((s) => !s.extra) || mine[0];
+            marks.set(session.date, {
+              cls: rirStatus(main),
+              title: [shortPH(session.date), formatLine(main)].join(" · ")
+            });
+          }
+          return `
           <article class="card">
             <h2>${muscle.name}</h2>
             <p class="latest">${formatLine(muscle.latest)}${muscle.latest.extra ? " · extra" : ""}</p>
+            ${renderWeekChart(weeks, windowStart, windowEnd, marks, `${muscle.name} from ${shortPH(windowStart)} to ${shortPH(windowEnd)}`)}
             ${muscle.lifts.map((lift) => {
-              const weighted = lift.instances.some((x) => typeof x.set.load === "number");
-              const max = Math.max(...lift.instances.map((x) => barValue(x.set, weighted)), 1);
               const first = lift.instances[0].date;
               const last = lift.instances[lift.instances.length - 1].date;
               return `
@@ -186,17 +253,10 @@
                     <span>${lift.exercise}${lift.extra ? " · extra" : ""}</span>
                     <span class="when">${first === last ? shortPH(first) : `${shortPH(first)}–${shortPH(last)}`}</span>
                   </div>
-                  <div class="bars" role="img" aria-label="${lift.exercise}${lift.extra ? " extra" : ""}">
-                    ${lift.instances.map((x) => {
-                      const pct = Math.max(10, Math.round((barValue(x.set, weighted) / max) * 100));
-                      const tip = [shortPH(x.date), formatDose(x.set), formatLoad(x.set), formatRir(x.set)].filter(Boolean).join(" · ");
-                      return `<span class="bar ${rirStatus(x.set)}" style="height:${pct}%" title="${tip}"></span>`;
-                    }).join("")}
-                  </div>
                 </div>`;
             }).join("")}
-          </article>
-        `).join("")}
+          </article>`;
+        }).join("")}
 
         <p class="kicker">Recent sessions</p>
         <ol class="sessions">
