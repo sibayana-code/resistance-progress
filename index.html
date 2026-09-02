@@ -27,6 +27,10 @@
       "Chest", "Abs", "Biceps", "Triceps",
       "Quads / glutes", "Shoulders", "Back", "Calves"
     ];
+    const WINDOW_DAYS = 28;
+    const BODYWEIGHT_KG = 75;
+    const BW_REP_KG = 0.65 * BODYWEIGHT_KG;
+    const WEEKDAY = ["S", "M", "T", "W", "T", "F", "S"];
 
     function parseISO(iso) {
       const [y, m, d] = iso.split("-").map(Number);
@@ -77,7 +81,7 @@
       return null;
     }
 
-    function formatDose(set) {
+    function formatSetDose(set) {
       if (set.seconds) return `${set.seconds}s`;
       const count = set.count || 1;
       if (set.reps == null) return null;
@@ -85,7 +89,7 @@
     }
 
     function formatLine(set) {
-      return [set.exercise, formatDose(set), formatLoad(set), formatRir(set)]
+      return [set.exercise, formatSetDose(set), formatLoad(set), formatRir(set)]
         .filter(Boolean)
         .join(" · ");
     }
@@ -99,18 +103,58 @@
       return out;
     }
 
-    function barValue(set, weighted) {
-      if (weighted) return typeof set.load === "number" ? set.load : 0;
-      if (set.reps != null) return set.reps;
-      if (set.seconds != null) return set.seconds;
-      return 0;
+    function dose(set) {
+      const n = set.count || 1;
+      const repsEq = set.reps != null ? set.reps : (set.seconds || 0);
+      const kg = typeof set.load === "number" ? set.load : 0;
+      let value = n * repsEq * (kg === 0 ? 1 : kg / BW_REP_KG);
+      if (set.effort === "too easy") value *= 0.5;
+      return value;
+    }
+
+    function countedLifts(session) {
+      return session.sets.filter((s) => !s.extra).length;
+    }
+
+    function windowDays(asOf) {
+      const start = addDays(asOf, -(WINDOW_DAYS - 1));
+      const days = [];
+      for (let i = 0; i < WINDOW_DAYS; i++) days.push(addDays(start, i));
+      const weeks = [];
+      for (let i = 0; i < WINDOW_DAYS; i += 7) weeks.push(days.slice(i, i + 7));
+      return { start, end: asOf, days, weeks };
+    }
+
+    function barPct(value, max) {
+      if (!max) return 0;
+      return Math.max(8, Math.round((value / max) * 100));
+    }
+
+    function renderWeeks(weeks, marks, max, aria) {
+      const labels = weeks[0].map((iso) => WEEKDAY[parseISO(iso).getDay()]);
+      return `
+        <div class="week-chart" role="img" aria-label="${aria}">
+          <div class="weekdays">${labels.map((w) => `<span>${w}</span>`).join("")}</div>
+          ${weeks.map((week) => `
+            <div class="week">
+              ${week.map((iso) => {
+                const mark = marks.get(iso);
+                if (!mark) {
+                  return `<span class="slot" title="${shortPH(iso)}"></span>`;
+                }
+                const tip = mark.title;
+                const pct = barPct(mark.dose, max);
+                return `<span class="slot" title="${tip}"><span class="bar ${mark.cls}" style="height:${pct}%"></span></span>`;
+              }).join("")}
+            </div>`).join("")}
+        </div>`;
     }
 
     function render(data) {
       const sessions = data.sessions;
       const lastComplete = sessions.find((s) => s.status === "complete");
       const nextDue = addDays(lastComplete.date, data.rules.maxGapDays);
-      const counted = lastComplete.sets.filter((s) => !s.extra).length;
+      const counted = countedLifts(lastComplete);
 
       const rirSets = sessions
         .filter((s) => !s.superseded)
@@ -159,6 +203,27 @@
       }).filter((m) => m.latest);
 
       const recent = sessions.slice(0, 3);
+      const { start, end, weeks } = windowDays(data.asOf);
+
+      const byDate = new Map();
+      for (const s of sessions) {
+        if (s.superseded) continue;
+        byDate.set(s.date, s);
+      }
+
+      const overallMarks = new Map();
+      for (const [iso, s] of byDate) {
+        if (iso < start || iso > end) continue;
+        const n = countedLifts(s);
+        if (n === 0) continue;
+        const work = s.sets.reduce((sum, set) => sum + dose(set), 0);
+        overallMarks.set(iso, {
+          dose: work,
+          cls: n >= data.rules.sessionSize ? "full" : "short",
+          title: `${formatPH(iso)} · ${n} of ${data.rules.sessionSize} · dose ${work.toFixed(1)}`
+        });
+      }
+      const overallMax = Math.max(0, ...[...overallMarks.values()].map((m) => m.dose));
 
       const app = document.getElementById("app");
       app.innerHTML = `
@@ -170,38 +235,38 @@
         </dl>
         <p class="note">6 lifts · target RIR 2–3 · no more than 2 days${bits.length ? ` · ${bits.join(" · ")}` : ""}</p>
 
+        <p class="kicker">Last ${WINDOW_DAYS} days</p>
+        ${renderWeeks(weeks, overallMarks, overallMax, `Session dose from ${shortPH(start)} to ${shortPH(end)}`)}
+        <p class="hint">Height is dose. Green is ${data.rules.sessionSize} of ${data.rules.sessionSize}. Gaps are rest or skipped. Extra sets add height, not the count.</p>
+
         <p class="kicker">Muscles</p>
-        ${muscles.map((muscle) => `
+        ${muscles.map((muscle) => {
+          const marks = new Map();
+          for (const [iso, s] of byDate) {
+            if (iso < start || iso > end) continue;
+            const mine = s.sets.filter((set) => set.muscle === muscle.name);
+            if (!mine.length) continue;
+            const work = mine.reduce((sum, set) => sum + dose(set), 0);
+            const main = mine.find((set) => !set.extra) || mine[0];
+            marks.set(iso, {
+              dose: work,
+              cls: "work",
+              title: [shortPH(iso), `dose ${work.toFixed(1)}`, formatLine(main)].join(" · ")
+            });
+          }
+          const max = Math.max(0, ...[...marks.values()].map((m) => m.dose));
+          return `
           <article class="card">
             <h2>${muscle.name}</h2>
             <p class="latest">${formatLine(muscle.latest)}${muscle.latest.extra ? " · extra" : ""}</p>
-            ${muscle.lifts.map((lift) => {
-              const weighted = lift.instances.some((x) => typeof x.set.load === "number");
-              const max = Math.max(...lift.instances.map((x) => barValue(x.set, weighted)), 1);
-              const first = lift.instances[0].date;
-              const last = lift.instances[lift.instances.length - 1].date;
-              return `
-                <div class="lift">
-                  <div class="lift-name">
-                    <span>${lift.exercise}${lift.extra ? " · extra" : ""}</span>
-                    <span class="when">${first === last ? shortPH(first) : `${shortPH(first)}–${shortPH(last)}`}</span>
-                  </div>
-                  <div class="bars" role="img" aria-label="${lift.exercise}${lift.extra ? " extra" : ""}">
-                    ${lift.instances.map((x) => {
-                      const pct = Math.max(10, Math.round((barValue(x.set, weighted) / max) * 100));
-                      const tip = [shortPH(x.date), formatDose(x.set), formatLoad(x.set), formatRir(x.set)].filter(Boolean).join(" · ");
-                      return `<span class="bar ${rirStatus(x.set)}" style="height:${pct}%" title="${tip}"></span>`;
-                    }).join("")}
-                  </div>
-                </div>`;
-            }).join("")}
-          </article>
-        `).join("")}
+            ${renderWeeks(weeks, marks, max, `${muscle.name} dose from ${shortPH(start)} to ${shortPH(end)}`)}
+          </article>`;
+        }).join("")}
 
         <p class="kicker">Recent sessions</p>
         <ol class="sessions">
           ${recent.map((s) => {
-            const n = s.sets.filter((x) => !x.extra).length;
+            const n = countedLifts(s);
             const label = s.status === "complete"
               ? `complete · ${n} of ${data.rules.sessionSize}`
               : `${s.status} · ${n} of ${data.rules.sessionSize}`;
