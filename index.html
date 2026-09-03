@@ -167,39 +167,9 @@
       if (rir.miss) bits.push(`${rir.miss} miss`);
       if (rir.blank) bits.push(`${rir.blank} blank`);
 
-      const muscles = MUSCLE_ORDER.map((name) => {
-        const lifts = new Map();
-        for (const session of [...sessions].reverse()) {
-          if (session.superseded) continue;
-          for (const set of session.sets) {
-            if (set.muscle !== name) continue;
-            const key = `${set.exercise}::${set.extra ? "extra" : "main"}`;
-            if (!lifts.has(key)) {
-              lifts.set(key, { exercise: set.exercise, extra: !!set.extra, instances: [] });
-            }
-            const n = set.count || 1;
-            for (let i = 0; i < n; i++) {
-              lifts.get(key).instances.push({ date: session.date, set });
-            }
-          }
-        }
-        let latest = null;
-        for (const session of sessions) {
-          if (session.superseded) continue;
-          const mine = session.sets.filter((s) => s.muscle === name);
-          if (!mine.length) continue;
-          latest = mine.find((s) => !s.extra) || mine[0];
-          break;
-        }
-        const liftList = [...lifts.values()].sort((a, b) => {
-          const aLast = a.instances[a.instances.length - 1].date;
-          const bLast = b.instances[b.instances.length - 1].date;
-          if (aLast !== bLast) return aLast < bLast ? 1 : -1;
-          if (a.exercise === b.exercise && a.extra !== b.extra) return a.extra ? 1 : -1;
-          return 0;
-        });
-        return { name, latest, lifts: liftList };
-      }).filter((m) => m.latest);
+      const muscles = MUSCLE_ORDER.filter((name) =>
+        sessions.some((s) => !s.superseded && s.sets.some((set) => set.muscle === name))
+      );
 
       const recent = sessions.slice(0, 3);
       const { start, end, days } = windowDays(data.asOf);
@@ -239,11 +209,11 @@
         <p class="hint">Height is dose. Green is ${data.rules.sessionSize} of ${data.rules.sessionSize}. Gaps are rest or skipped. Extra sets add height, not the count.</p>
 
         <p class="kicker">Muscles</p>
-        ${muscles.map((muscle) => {
+        ${muscles.map((name) => {
           const marks = new Map();
           for (const [iso, s] of byDate) {
             if (iso < start || iso > end) continue;
-            const mine = s.sets.filter((set) => set.muscle === muscle.name);
+            const mine = s.sets.filter((set) => set.muscle === name);
             if (!mine.length) continue;
             const work = mine.reduce((sum, set) => sum + dose(set), 0);
             const main = mine.find((set) => !set.extra) || mine[0];
@@ -256,9 +226,8 @@
           const max = Math.max(0, ...[...marks.values()].map((m) => m.dose));
           return `
           <article class="card">
-            <h2>${muscle.name}</h2>
-            <p class="latest">${formatLine(muscle.latest)}${muscle.latest.extra ? " · extra" : ""}</p>
-            ${renderStrip(days, marks, max, `${muscle.name} dose from ${shortPH(start)} to ${shortPH(end)}`)}
+            <h2>${name}</h2>
+            ${renderStrip(days, marks, max, `${name} dose from ${shortPH(start)} to ${shortPH(end)}`)}
           </article>`;
         }).join("")}
 
