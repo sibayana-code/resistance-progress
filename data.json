@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-09-01",
+  "asOf": "2026-09-03",
   "timezone": "Asia/Manila",
   "rules": {
     "sessionSize": 6,
@@ -8,6 +8,60 @@
     "maxGapDays": 2
   },
   "sessions": [
+    {
+      "date": "2026-09-03",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 40,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "pu-std",
+          "count": 1,
+          "reps": 24,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 17,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "hammer curl",
+          "count": 1,
+          "reps": 20,
+          "load": 8,
+          "rir": 3
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 20,
+          "load": 8,
+          "rir": 2
+        },
+        {
+          "muscle": "Back",
+          "exercise": "single-arm row",
+          "count": 1,
+          "reps": 12,
+          "load": 8,
+          "rir": 3
+        }
+      ]
+    },
     {
       "date": "2026-09-01",
       "status": "complete",
@@ -168,7 +222,10 @@
           "count": 2,
           "reps": 12,
           "load": "bw",
-          "rir": [2, 3]
+          "rir": [
+            2,
+            3
+          ]
         },
         {
           "muscle": "Chest",
@@ -176,7 +233,10 @@
           "count": 1,
           "reps": 12,
           "load": "bw",
-          "rir": [2, 3]
+          "rir": [
+            2,
+            3
+          ]
         },
         {
           "muscle": "Calves",
@@ -184,7 +244,10 @@
           "count": 1,
           "reps": 25,
           "load": "bw",
-          "rir": [2, 3]
+          "rir": [
+            2,
+            3
+          ]
         },
         {
           "muscle": "Abs",
