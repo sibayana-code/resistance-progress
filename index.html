@@ -30,7 +30,6 @@
     const WINDOW_DAYS = 28;
     const BODYWEIGHT_KG = 75;
     const BW_REP_KG = 0.65 * BODYWEIGHT_KG;
-    const WEEKDAY = ["S", "M", "T", "W", "T", "F", "S"];
 
     function parseISO(iso) {
       const [y, m, d] = iso.split("-").map(Number);
@@ -120,9 +119,7 @@
       const start = addDays(asOf, -(WINDOW_DAYS - 1));
       const days = [];
       for (let i = 0; i < WINDOW_DAYS; i++) days.push(addDays(start, i));
-      const weeks = [];
-      for (let i = 0; i < WINDOW_DAYS; i += 7) weeks.push(days.slice(i, i + 7));
-      return { start, end: asOf, days, weeks };
+      return { start, end: asOf, days };
     }
 
     function barPct(value, max) {
@@ -130,23 +127,25 @@
       return Math.max(8, Math.round((value / max) * 100));
     }
 
-    function renderWeeks(weeks, marks, max, aria) {
-      const labels = weeks[0].map((iso) => WEEKDAY[parseISO(iso).getDay()]);
+    function renderStrip(days, marks, max, aria) {
+      const start = days[0];
+      const end = days[days.length - 1];
       return `
-        <div class="week-chart" role="img" aria-label="${aria}">
-          <div class="weekdays">${labels.map((w) => `<span>${w}</span>`).join("")}</div>
-          ${weeks.map((week) => `
-            <div class="week">
-              ${week.map((iso) => {
-                const mark = marks.get(iso);
-                if (!mark) {
-                  return `<span class="slot" title="${shortPH(iso)}"></span>`;
-                }
-                const tip = mark.title;
-                const pct = barPct(mark.dose, max);
-                return `<span class="slot" title="${tip}"><span class="bar ${mark.cls}" style="height:${pct}%"></span></span>`;
-              }).join("")}
-            </div>`).join("")}
+        <div class="strip-chart" role="img" aria-label="${aria}">
+          <div class="strip">
+            ${days.map((iso) => {
+              const mark = marks.get(iso);
+              if (!mark) {
+                return `<span class="slot" title="${shortPH(iso)}"></span>`;
+              }
+              const pct = barPct(mark.dose, max);
+              return `<span class="slot" title="${mark.title}"><span class="bar ${mark.cls}" style="height:${pct}%"></span></span>`;
+            }).join("")}
+          </div>
+          <div class="strip-axis">
+            <span>${shortPH(start)}</span>
+            <span>${shortPH(end)}</span>
+          </div>
         </div>`;
     }
 
@@ -203,7 +202,7 @@
       }).filter((m) => m.latest);
 
       const recent = sessions.slice(0, 3);
-      const { start, end, weeks } = windowDays(data.asOf);
+      const { start, end, days } = windowDays(data.asOf);
 
       const byDate = new Map();
       for (const s of sessions) {
@@ -236,7 +235,7 @@
         <p class="note">6 lifts · target RIR 2–3 · no more than 2 days${bits.length ? ` · ${bits.join(" · ")}` : ""}</p>
 
         <p class="kicker">Last ${WINDOW_DAYS} days</p>
-        ${renderWeeks(weeks, overallMarks, overallMax, `Session dose from ${shortPH(start)} to ${shortPH(end)}`)}
+        ${renderStrip(days, overallMarks, overallMax, `Session dose from ${shortPH(start)} to ${shortPH(end)}`)}
         <p class="hint">Height is dose. Green is ${data.rules.sessionSize} of ${data.rules.sessionSize}. Gaps are rest or skipped. Extra sets add height, not the count.</p>
 
         <p class="kicker">Muscles</p>
@@ -259,7 +258,7 @@
           <article class="card">
             <h2>${muscle.name}</h2>
             <p class="latest">${formatLine(muscle.latest)}${muscle.latest.extra ? " · extra" : ""}</p>
-            ${renderWeeks(weeks, marks, max, `${muscle.name} dose from ${shortPH(start)} to ${shortPH(end)}`)}
+            ${renderStrip(days, marks, max, `${muscle.name} dose from ${shortPH(start)} to ${shortPH(end)}`)}
           </article>`;
         }).join("")}
 
