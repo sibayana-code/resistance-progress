@@ -136,12 +136,7 @@ footer {
 
 .card h2 {
   font-size: 1.05rem;
-  margin: 0 0 .3rem;
-}
-
-.latest {
-  margin: 0 0 .7rem;
-  font-size: .95rem;
+  margin: 0 0 .55rem;
 }
 
 .strip-chart { margin: 0 0 .85rem; }
