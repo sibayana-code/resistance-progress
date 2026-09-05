@@ -38,6 +38,15 @@
           "extra": true
         },
         {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 31,
+          "load": "bw",
+          "rir": 2,
+          "extra": true
+        },
+        {
           "muscle": "Chest",
           "exercise": "machine",
           "count": 1,
@@ -59,7 +68,7 @@
           "count": 1,
           "reps": 12,
           "load": 12,
-          "rir": 1
+          "rir": 2
         },
         {
           "muscle": "Quads / glutes",
@@ -68,6 +77,15 @@
           "reps": 20,
           "load": "bw",
           "rir": 2
+        },
+        {
+          "muscle": "Triceps",
+          "exercise": "standing extension",
+          "count": 1,
+          "reps": 15,
+          "load": 14,
+          "rir": 2,
+          "extra": true
         }
       ]
     },
