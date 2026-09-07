@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-09-05",
+  "asOf": "2026-09-07",
   "timezone": "Asia/Manila",
   "rules": {
     "sessionSize": 6,
@@ -8,6 +8,95 @@
     "maxGapDays": 2
   },
   "sessions": [
+    {
+      "date": "2026-09-07",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Abs",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 10,
+          "load": 25,
+          "rir": 2
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 11,
+          "load": 25,
+          "rir": 2,
+          "extra": true
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 31,
+          "load": "bw",
+          "rir": 2,
+          "extra": true
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 13,
+          "load": 25,
+          "rir": 2
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "machine",
+          "count": 1,
+          "reps": 12,
+          "load": 25,
+          "rir": 2,
+          "extra": true
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "supinated curl",
+          "count": 1,
+          "reps": 8,
+          "load": 10,
+          "rir": 2
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 10,
+          "load": 12,
+          "rir": 2
+        },
+        {
+          "muscle": "Back",
+          "exercise": "lat pulldown",
+          "count": 1,
+          "reps": 10,
+          "load": 45,
+          "rir": 2
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 18,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Triceps",
+          "exercise": "standing extension",
+          "count": 1,
+          "reps": 15,
+          "load": 14,
+          "rir": 2
+        }
+      ]
+    },
     {
       "date": "2026-09-05",
       "status": "complete",
