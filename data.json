@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-09-07",
+  "asOf": "2026-09-10",
   "timezone": "Asia/Manila",
   "rules": {
     "sessionSize": 6,
@@ -8,6 +8,60 @@
     "maxGapDays": 2
   },
   "sessions": [
+    {
+      "date": "2026-09-10",
+      "status": "complete",
+      "sets": [
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 29,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "pu-diamond",
+          "count": 1,
+          "reps": 10,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Triceps",
+          "exercise": "chair dips",
+          "count": 1,
+          "reps": 21,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 23,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "pu-pike",
+          "count": 1,
+          "reps": 15,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Calves",
+          "exercise": "calf raise",
+          "count": 1,
+          "reps": 35,
+          "load": "bw",
+          "rir": 3
+        }
+      ]
+    },
     {
       "date": "2026-09-07",
       "status": "complete",
