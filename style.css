@@ -165,7 +165,7 @@ footer {
 }
 
 .bar.full { background: var(--ok); }
-.bar.short { background: var(--muted); opacity: .5; }
+.bar.short { background: var(--miss); }
 .bar.work { background: var(--accent); }
 
 .strip-axis {
