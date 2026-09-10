@@ -176,7 +176,7 @@
 
       const byDate = new Map();
       for (const s of sessions) {
-        if (s.superseded) continue;
+        if (s.superseded || s.status === "abandoned") continue;
         byDate.set(s.date, s);
       }
 
@@ -206,7 +206,7 @@
 
         <p class="kicker">Last ${WINDOW_DAYS} days</p>
         ${renderStrip(days, overallMarks, overallMax, `Session dose from ${shortPH(start)} to ${shortPH(end)}`)}
-        <p class="hint">Height is dose. Green is ${data.rules.sessionSize} of ${data.rules.sessionSize}. Gaps are rest or skipped. Extra sets add height, not the count.</p>
+        <p class="hint">Height is dose. Green is ${data.rules.sessionSize} of ${data.rules.sessionSize}. Red is incomplete. Gaps are rest, skip, or abandoned. Extra sets add height, not the count.</p>
 
         <p class="kicker">Muscles</p>
         ${muscles.map((name) => {
