@@ -63,6 +63,36 @@
       ]
     },
     {
+      "date": "2026-09-09",
+      "status": "incomplete",
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "pu-std",
+          "count": 1,
+          "reps": 18,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 29,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "arm curl",
+          "count": 1,
+          "reps": 13,
+          "load": 8,
+          "rir": 2
+        }
+      ]
+    },
+    {
       "date": "2026-09-07",
       "status": "complete",
       "sets": [
