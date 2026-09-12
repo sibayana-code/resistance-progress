@@ -59,6 +59,15 @@
           "reps": 10,
           "load": 8,
           "rir": 3
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 16,
+          "load": "bw",
+          "rir": 2,
+          "extra": true
         }
       ]
     },
