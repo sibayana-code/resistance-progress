@@ -29,7 +29,25 @@
     ];
     const WINDOW_DAYS = 28;
     const BODYWEIGHT_KG = 75;
-    const BW_REP_KG = 0.65 * BODYWEIGHT_KG;
+    // Reference mass for dose normalizer (keeps loaded DB history stable).
+    const REF_KG = 0.65 * BODYWEIGHT_KG;
+
+    function bwFraction(exercise) {
+      const e = (exercise || "").toLowerCase();
+      if (/lunge|squat|hinge|dead|step/.test(e)) return 1.0; // axial lower
+      if (/calf/.test(e)) return 1.0;
+      if (/dip/.test(e)) return 0.50; // chair/parallel dips
+      if (/pike/.test(e)) return 0.55; // vertical/shoulder
+      if (/pu-|push/.test(e)) return 0.60; // horizontal push-ups
+      if (/sit-?up|crunch|plank|hundred/.test(e)) return 0.25; // trunk
+      return 0.50; // default BW
+    }
+
+    function effectiveKg(set) {
+      if (typeof set.load === "number") return set.load;
+      if (set.load === "bw") return bwFraction(set.exercise) * BODYWEIGHT_KG;
+      return 0; // missing load → no dose
+    }
 
     function parseISO(iso) {
       const [y, m, d] = iso.split("-").map(Number);
@@ -105,10 +123,18 @@
     function dose(set) {
       const n = set.count || 1;
       const repsEq = set.reps != null ? set.reps : (set.seconds || 0);
-      const kg = typeof set.load === "number" ? set.load : 0;
-      let value = n * repsEq * (kg === 0 ? 1 : kg / BW_REP_KG);
+      let value = n * repsEq * (effectiveKg(set) / REF_KG);
       if (set.effort === "too easy") value *= 0.5;
       return value;
+    }
+
+    // Muscle strips: one hard BW day must not crush DB progress bars.
+    function visualMax(doses) {
+      const xs = doses.filter((d) => d > 0).sort((a, b) => a - b);
+      if (!xs.length) return 1;
+      const raw = xs[xs.length - 1];
+      const p90 = xs[Math.min(xs.length - 1, Math.floor(0.9 * (xs.length - 1)))];
+      return raw > p90 * 2.5 ? Math.max(p90 * 1.15, 1) : raw;
     }
 
     function countedLifts(session) {
@@ -124,7 +150,7 @@
 
     function barPct(value, max) {
       if (!max) return 0;
-      return Math.max(8, Math.round((value / max) * 100));
+      return Math.min(100, Math.max(8, Math.round((value / max) * 100)));
     }
 
     function renderStrip(days, marks, max, aria) {
@@ -223,7 +249,7 @@
               title: [shortPH(iso), `dose ${work.toFixed(1)}`, formatLine(main)].join(" · ")
             });
           }
-          const max = Math.max(0, ...[...marks.values()].map((m) => m.dose));
+          const max = visualMax([...marks.values()].map((m) => m.dose));
           return `
           <article class="card">
             <h2>${name}</h2>
