@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-09-19",
+  "asOf": "2026-09-27",
   "timezone": "Asia/Manila",
   "rules": {
     "sessionSize": 6,
@@ -8,6 +8,74 @@
     "maxGapDays": 2
   },
   "sessions": [
+    {
+      "date": "2026-09-27",
+      "status": "incomplete",
+      "sets": [
+        {
+          "muscle": "Chest",
+          "exercise": "pu-std",
+          "count": 1,
+          "reps": 20,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 30,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Shoulders",
+          "exercise": "Arnold press",
+          "count": 1,
+          "reps": 16,
+          "load": 8,
+          "rir": 3
+        },
+        {
+          "muscle": "Quads / glutes",
+          "exercise": "reverse lunge",
+          "count": 1,
+          "reps": 19,
+          "load": "bw",
+          "rir": 2
+        },
+        {
+          "muscle": "Biceps",
+          "exercise": "supinating curl",
+          "count": 1,
+          "reps": 20,
+          "load": 8,
+          "rir": 3
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "status": "incomplete",
+      "sets": [
+        {
+          "muscle": "Abs",
+          "exercise": "sit-ups",
+          "count": 1,
+          "reps": 30,
+          "load": "bw",
+          "rir": 3
+        },
+        {
+          "muscle": "Chest",
+          "exercise": "pu-std",
+          "count": 1,
+          "reps": 19,
+          "load": "bw",
+          "rir": 2
+        }
+      ]
+    },
     {
       "date": "2026-09-19",
       "status": "complete",
